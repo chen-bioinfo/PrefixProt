@@ -23,6 +23,7 @@ numpy==1.23.5
 tqdm==4.65.0
 matplotlib==3.7.1
 seaborn==0.12.2
+tensorboard==2.13.0
 
 # 3. Clone this repository
 git clone https://github.com/chen-bioinfo/PrefixProt.git
