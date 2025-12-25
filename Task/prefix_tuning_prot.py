@@ -75,17 +75,17 @@ def train(config):
     # data preprocessing
     tokenizer = AutoTokenizer.from_pretrained(config.model_name_or_path) 
 
-    if tokenizer.pad_token_id is None:   # 如果不存在pad字符，则使用eos字符替代
+    if tokenizer.pad_token_id is None:   # eos
         tokenizer.pad_token_id = tokenizer.eos_token_id
 
 
     def preprocess_function(examples):
-        batch_size = len(examples[config.text_column])   # map函数按batch处理时的一个batch_size
+        batch_size = len(examples[config.text_column])  
         print(batch_size)
-        inputs = [x for x in examples[config.text_column]]   # 构建输入形式 "ABCDEFG" 
-        model_inputs = tokenizer(inputs)   # 将输入tokenize为标签
+        inputs = [x for x in examples[config.text_column]]   
+        model_inputs = tokenizer(inputs)   # tokenize
         labels = tokenizer(inputs)
-        # 该for循环处理每个样本
+        # each sample
         for i in range(batch_size):
             sample_input_ids = [tokenizer.eos_token_id] + model_inputs["input_ids"][i] + [tokenizer.eos_token_id]
             label_input_ids = [tokenizer.eos_token_id] + labels["input_ids"][i] + [tokenizer.eos_token_id]
@@ -93,16 +93,16 @@ def train(config):
             model_inputs["input_ids"][i] = sample_input_ids
             model_inputs["attention_mask"][i] = [1] * len(model_inputs["input_ids"][i])
 
-        #该for循环进行padding操作
+        #padding
         for i in range(batch_size):
             sample_input_ids = model_inputs["input_ids"][i]
             label_input_ids = labels["input_ids"][i]
-            model_inputs["input_ids"][i] = sample_input_ids + [tokenizer.pad_token_id] * (      # 补齐序列，在每个序列前面加上pad字符至max_length
+            model_inputs["input_ids"][i] = sample_input_ids + [tokenizer.pad_token_id] * (      # add pad
                 config.max_length - len(sample_input_ids)
             )
             model_inputs["attention_mask"][i] = model_inputs["attention_mask"][i] +  [0] * (config.max_length - len(sample_input_ids)) 
             labels["input_ids"][i] = label_input_ids + [-100] * (config.max_length - len(sample_input_ids))
-            model_inputs["input_ids"][i] = torch.tensor(model_inputs["input_ids"][i][:config.max_length])   # 取[:max_length]操作为处理输入比max_length长的情况
+            model_inputs["input_ids"][i] = torch.tensor(model_inputs["input_ids"][i][:config.max_length])   # [:max_length]
             model_inputs["attention_mask"][i] = torch.tensor(model_inputs["attention_mask"][i][:config.max_length])
             labels["input_ids"][i] = torch.tensor(labels["input_ids"][i][:config.max_length])
         model_inputs["labels"] = labels["input_ids"]
