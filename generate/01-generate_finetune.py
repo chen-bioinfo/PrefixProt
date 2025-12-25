@@ -1,5 +1,4 @@
 # Sequence generation using fine tuning models
-
 import sys
 sys.path.append('../')
 from transformers import pipeline
